@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vestige Team Messenger - Girish S</title>
+    <style>
+        /* --- START LOGIN PROTECTION STYLES --- */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #D4AF37;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            width: 320px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .login-box h2 {
+            font-family: 'Cinzel', serif;
+            color: #FFD700;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            letter-spacing: 2px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #D4AF37;
+            border-radius: 8px;
+            color: #fff;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #D4AF37, #FFD700);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        /* --- END LOGIN PROTECTION STYLES --- */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: #000000;
+            color: #ff4444;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .black-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), #000000);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .network-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .network-background canvas {
+            display: block;
+            opacity: 0.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                0 0 80px rgba(255, 215, 0, 0.1),
+                inset 0 0 100px rgba(255, 255, 255, 0.03);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            animation: glassGlow 4s ease-in-out infinite;
+            display: none; /* Hidden until login */
+        }
+
+        @keyframes glassGlow {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                    0 0 80px rgba(255, 215, 0, 0.1),
+                    inset 0 0 100px rgba(255, 255, 255, 0.03);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+            50% { 
+                box-shadow: 
+                    0 8px 32px 0 rgba(31, 38, 135, 0.5),
+                    0 0 120px rgba(255, 215, 0, 0.3),
+                    inset 0 0 120px rgba(255, 255, 255, 0.05);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #DC143C, transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, transparent, #D4AF37, #FFD700, #D4AF37, transparent) 1;
+        }
+
+        .profile-photo {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid #D4AF37;
+            margin-bottom: 20px;
+            object-fit: cover;
+            box-shadow: 
+                0 0 30px rgba(212, 175, 55, 0.6),
+                0 0 60px rgba(255, 215, 0, 0.3);
+            animation: photoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes photoGlow {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 
+                    0 0 30px rgba(212, 175, 55, 0.6),
+                    0 0 60px rgba(255, 215, 0, 0.3);
+                border-color: #D4AF37;
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 
+                    0 0 50px rgba(255, 215, 0, 0.8),
+                    0 0 100px rgba(212, 175, 55, 0.5);
+                border-color: #FFD700;
+            }
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            position: relative;
+            background: linear-gradient(
+                to bottom,
+                #ffd700 0%,
+                #ffed4e 10%,
+                #ffed4e 20%,
+                #ffc800 30%,
+                #e6ac00 40%,
+                #b8860b 50%,
+                #8b6914 60%,
+                #6b5410 70%,
+                #4a3c0e 80%,
+                #2d2510 90%,
+                #1a1a0a 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.5));
+            animation: goldShine 3s linear infinite;
+        }
+
+        @keyframes goldShine {
+            0% { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.5)) brightness(1); }
+            50% { filter: drop-shadow(0 0 50px rgba(255, 215, 0, 0.8)) brightness(1.2); }
+            100% { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.5)) brightness(1); }
+        }
+
+        .subtitle {
+            font-family: 'Playfair Display', serif;
+            background: linear-gradient(90deg, #FF6B35, #F7931E, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.4em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.3));
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .left-panel, .right-panel {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                inset 0 0 60px rgba(255, 255, 255, 0.02);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(90deg, #50C878, #40E0D0, #9370DB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.7em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, #50C878, #40E0D0, #9370DB) 1;
+            padding-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(80, 200, 120, 0.3));
+        }
+
+        .add-contact-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-contact-form input {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(138, 43, 226, 0.4);
+            border-radius: 8px;
+            color: #E6E6FA;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 14px;
+        }
+
+        .add-contact-form input:focus {
+            outline: none;
+            border-color: #BA55D3;
+            box-shadow: 0 0 15px rgba(186, 85, 211, 0.5);
+        }
+
+        .add-contact-form button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #50C878, #40E0D0);
+            color: white;
+            border: 2px solid #7FFFD4;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-contact-form button:hover {
+            background: linear-gradient(135deg, #40E0D0, #7FFFD4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(64, 224, 208, 0.4);
+        }
+
+        .contact-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 2px solid rgba(138, 43, 226, 0.4);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .contact-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contact-table thead {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #4169E1, #8A2BE2);
+            z-index: 10;
+        }
+
+        .contact-table th {
+            padding: 12px;
+            text-align: left;
+            color: #ffffff;
+            font-weight: bold;
+            border-bottom: 2px solid #9370DB;
+            font-size: 13px;
+        }
+
+        .contact-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+            color: #E6E6FA;
+        }
+
+        .contact-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .contact-table tbody tr:hover {
+            background: rgba(138, 43, 226, 0.2);
+        }
+
+        .contact-table tbody tr.selected {
+            background: rgba(147, 112, 219, 0.3);
+        }
+
+        .contact-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #BA55D3;
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ff6666;
+            transform: scale(1.05);
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .bulk-actions button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .select-all-btn {
+            background: linear-gradient(135deg, #50C878, #40E0D0);
+            color: white;
+        }
+
+        .select-all-btn:hover {
+            background: linear-gradient(135deg, #40E0D0, #7FFFD4);
+        }
+
+        .deselect-all-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF1493);
+            color: white;
+        }
+
+        .deselect-all-btn:hover {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #4169E1, #8A2BE2);
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(135deg, #6495ED, #BA55D3);
+        }
+
+        .import-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF1493);
+            color: white;
+        }
+
+        .import-btn:hover {
+            background: linear-gradient(135deg, #FF8C00, #FFA500);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(138, 43, 226, 0.4);
+            border-radius: 10px;
+            color: #E6E6FA;
+            padding: 15px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #BA55D3;
+            box-shadow: 0 0 20px rgba(186, 85, 211, 0.6);
+        }
+
+        .helper-text {
+            color: #40E0D0;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .message-templates {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .template-btn {
+            background: linear-gradient(135deg, #4169E1, #8A2BE2);
+            color: #ffffff;
+            border: 2px solid #9370DB;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-btn:hover {
+            background: linear-gradient(135deg, #6495ED, #BA55D3);
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .template-btn.selected {
+            background: linear-gradient(135deg, #9370DB, #DDA0DD);
+            border-color: #BA55D3;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B, #FF1493);
+            color: white;
+            border: 2px solid #FF69B4;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            box-shadow: 0 5px 20px rgba(255, 20, 147, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #333333, #555555);
+            color: #ff4444;
+            border: 2px solid #8B0000;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #555555, #777777);
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-message {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(0, 128, 0, 0.3);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+            color: #ff6666;
+        }
+
+        .selected-count {
+            display: inline-block;
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #FF6B6B, #FF1493);
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>System Access</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="validateLogin()">Login</button>
+        </div>
+    </div>
+
+    <div class="black-overlay"></div>
+    <div class="network-background">
+        <canvas id="networkCanvas"></canvas>
+    </div>
+    
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <img src="https://i.postimg.cc/XvTq85tC/Girish_S_small_size.jpg" alt="Girish S" class="profile-photo" id="profilePhoto">
+            <h1>Girish S</h1>
+            <p class="subtitle">Universal Crown Director of Vestige</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <h2 class="section-title">📱 Team Contact Management</h2>
+                
+                <div class="add-contact-form">
+                    <input type="text" id="contactName" placeholder="Enter Name">
+                    <input type="text" id="contactNumber" placeholder="Enter Phone Number">
+                    <button id="addContactBtn">➕ Add Contact</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3);">
+                    <h3 style="color: #40E0D0; font-size: 16px; margin-bottom: 10px;">📝 Bulk Add (Manual Entry)</h3>
+                    <textarea id="bulkContactInput" placeholder="Paste contacts here (one per line):&#10;Name, Number&#10;Example:&#10;John Doe, 9876543210&#10;Jane Smith, 9123456789" style="min-height: 120px;"></textarea>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="bulkAddBtn" style="padding: 10px 20px; background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1;">➕ Add All</button>
+                        <button id="clearBulkBtn" style="padding: 10px 20px; background: linear-gradient(135deg, #FF6B6B, #FF1493); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🗑️ Clear</button>
+                    </div>
+                    <p style="color: #40E0D0; font-size: 11px; margin-top: 8px;">💡 Format: Name, PhoneNumber (comma separated)</p>
+                </div>
+
+                <div class="bulk-actions">
+                    <button class="select-all-btn" id="selectAllBtn">✅ Select All</button>
+                    <button class="deselect-all-btn" id="deselectAllBtn">❌ Deselect All</button>
+                    <button class="export-btn" id="exportBtn">💾 Export</button>
+                    <button class="import-btn" id="importBtn">📥 Import</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                    <span class="selected-count" id="selectedCount">0 Selected</span>
+                </div>
+
+                <div id="bulkEditSection" style="margin-top: 10px; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3); display: none;">
+                    <h3 style="color: #FFD700; margin-bottom: 10px; font-size: 14px;">⚡ Bulk Operations</h3>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button id="bulkEditBtn" style="flex: 1; min-width: 120px; padding: 8px 12px; background: linear-gradient(135deg, #4169E1, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;">
+                            ✏️ Edit Selected
+                        </button>
+                        <button id="bulkDeleteBtn" style="flex: 1; min-width: 120px; padding: 8px 12px; background: linear-gradient(135deg, #FF6B6B, #FF1493); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;">
+                            🗑️ Delete Selected
+                        </button>
+                        <button id="bulkRestoreBtn" style="flex: 1; min-width: 120px; padding: 8px 12px; background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">
+                            ♻️ Restore Selected
+                        </button>
+                        <button id="bulkPermanentDeleteBtn" style="flex: 1; min-width: 140px; padding: 8px 12px; background: linear-gradient(135deg, #8B0000, #DC143C); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; display: none;">
+                            ❌ Delete Forever
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 10px;">
+                    <input type="text" id="searchContact" placeholder="🔍 Search by name or number..." style="width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(138, 43, 226, 0.4); border-radius: 8px; color: #E6E6FA; font-family: 'Cormorant Garamond', serif; font-size: 14px;">
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button id="showActiveBtn" class="view-toggle-btn active" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">📋 Active Contacts</button>
+                    <button id="showDeletedBtn" class="view-toggle-btn" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #666, #888); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">🗑️ Deleted (<span id="deletedCount">0</span>)</button>
+                </div>
+
+                <div class="contact-table-container">
+                    <table class="contact-table">
+                        <thead id="tableHeader">
+                            <tr>
+                                <th style="width: 40px;">✓</th>
+                                <th>Name</th>
+                                <th>Number</th>
+                                <th>Notes</th>
+                                <th style="width: 100px;">Last Contact</th>
+                                <th style="width: 80px;">Send</th>
+                                <th style="width: 60px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactTableBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 20px; color: #40E0D0;">No contacts yet. Add your first contact above!</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <h2 class="section-title">💬 Message Templates</h2>
+                <div class="message-templates" id="messageTemplates">
+                    <button class="template-btn" data-template="1">
+                        <strong>Template 1:</strong> Professional Network Introduction
+                    </button>
+                    <button class="template-btn" data-template="2">
+                        <strong>Template 2:</strong> Performance Motivation
+                    </button>
+                    <button class="template-btn" data-template="3">
+                        <strong>Template 3:</strong> Consistency Reminder (14th Closing)
+                    </button>
+                    <button class="template-btn" data-template="4">
+                        <strong>Template 4:</strong> Level Closing - TBB & LOB Focus
+                    </button>
+                    <button class="template-btn" data-template="5">
+                        <strong>Template 5:</strong> Training Attendance Reminder
+                    </button>
+                    <button class="template-btn" data-template="6">
+                        <strong>Template 6:</strong> Recruitment Excellence
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #DC143C; margin-bottom: 10px;">✍️ Custom Message / Preview</h3>
+                    
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="language-btn active-lang" data-lang="en" style="padding: 8px 16px; background: linear-gradient(135deg, #4169E1, #8A2BE2); color: white; border: 2px solid #9370DB; border-radius: 8px; cursor: pointer; font-family: 'Cormorant Garamond', serif;">English</button>
+                        <button class="language-btn" data-lang="ta" style="padding: 8px 16px; background: linear-gradient(135deg, #FF6B6B, #FF1493); color: white; border: 2px solid #FF69B4; border-radius: 8px; cursor: pointer; font-family: 'Cormorant Garamond', serif; opacity: 0.6;">தமிழ் (Tamil)</button>
+                    </div>
+                    
+                    <textarea id="customMessage" placeholder="Type your custom message here or select a template above to preview..."></textarea>
+                    
+                    <button id="saveCustomBtn" style="margin-top: 15px; padding: 10px 20px; width: 100%; background: linear-gradient(135deg, #4a0000, #660000); color: #ff6666; border: 2px solid #8B0000; border-radius: 8px; cursor: pointer;">
+                        💾 Save as Custom Template
+                    </button>
+                </div>
+
+                <div id="customTemplatesSection" style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; border: 1px solid rgba(138, 43, 226, 0.3); display: none;">
+                    <h3 style="color: #FFD700; margin-bottom: 10px; font-size: 16px;">⭐ My Custom Templates (<span id="customTemplateCount">0</span>)</h3>
+                    <div id="customTemplatesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="sendBtn">📤 Send to Selected Contacts</button>
+                    <button class="btn btn-secondary" id="clearBtn">🗑️ Clear Message</button>
+                </div>
+
+                <div class="status-message" id="statusMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- START LOGIN PROTECTION LOGIC --- */
+        function validateLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === "nfvt" && pass === "nfvt@123") {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+            } else {
+                alert("Incorrect Credentials. Access Denied.");
+            }
+        }
+        /* --- END LOGIN PROTECTION LOGIC --- */
+
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
+        const templates = {
+            1: `Hi, this is Girish S, Universal Crown Director of Vestige. You have been added to my network. In case of any Vestige business-related queries or support, please feel free to contact me at this number. Looking forward to working with you!`,
+            
+            2: `Hi! I've noticed your performance could use a boost. Let's push harder and work smarter to increase your income through PV, level advancement, meetings, and conference calls. Your potential is unlimited - let's unlock it together!`,
+            
+            3: `🔔 Gentle Reminder: Consistency is key! Month closing is on the 14th. Please complete your PV and share this reminder with your team so they can do the same. Together we achieve more!`,
+            
+            4: `⏰ Level Closing Time! Please focus on building your TBB (Team Building Bonus) and expanding your LOB (Line of Business) legs. This is crucial for your growth. Let's make this month count!`,
+            
+            5: `📚 Training Reminder: I've noticed you haven't been attending our training sessions or following our WhatsApp updates. Consistent learning is essential for success. How can we achieve this level of income without putting in the work? Let's get back on track!`,
+            
+            6: `🌟 Recruitment Excellence Update: Our team is doing phenomenally well in recruitment! We're using offline methods (visiting cards, posters) and online approaches effectively. Even members who aren't actively recruiting are benefiting from our team's growth. New achievers are emerging every month! Please focus on your recruitment efforts to be part of this success story. Your contribution matters!`
+        };
+
+        const templatesTamil = {
+            1: `வணக்கம், நான் கிரிஷ் எஸ், வெஸ்டீஜ் யுனிவர்சல் க்ரவுன் டைரக்டர். நீங்கள் என் நெட்வொர்க்கில் சேர்க்கப்பட்டுள்ளீர்கள். வெஸ்டீஜ் தொழில் தொடர்பான ஏதேனும் கேள்விகள் அல்லது ஆதரவிற்கு, தயவுசெய்து இந்த எண்ணில் என்னை தொடர்பு கொள்ளவும். உங்களுடன் இணைந்து பணியாற்ற ஆவலாக உள்ளேன்!`,
+            
+            2: `வணக்கம்! உங்கள் செயல்திறனை மேம்படுத்த முடியும் என்று கவனித்தேன். PV, லெவல் முன்னேற்றம், கூட்டங்கள் மற்றும் கான்ஃபரன்ஸ் கால்கள் மூலம் உங்கள் வருமானத்தை அதிகரிக்க கடினமாக உழைப்போம். உங்கள் திறன் வரம்பற்றது - அதை ஒன்றாக திறப்போம்!`,
+            
+            3: `🔔 மென்மையான நினைவூட்டல்: நிலைத்தன்மை முக்கியம்! மாத முடிவு 14ம் தேதி. தயவுசெய்து உங்கள் PV ஐ முடித்து, உங்கள் குழுவினருடன் இந்த நினைவூட்டலைப் பகிரவும். ஒன்றாக நாம் அதிகம் சாதிக்கிறோம்!`,
+            
+            4: `⏰ லெவல் க்ளோஸிங் நேரம்! தயவுசெய்து TBB (டீம் பில்டிங் போனஸ்) மற்றும் LOB (லைன் ஆஃப் பிஸினஸ்) கால்களை விரிவுபடுத்துவதில் கவனம் செலுத்தவும். இது உங்கள் வளர்ச்சிக்கு மிக முக்கியமானது. இந்த மாதத்தை எண்ணத்தக்கதாக ஆக்குவோம்!`,
+            
+            5: `📚 பயிற்சி நினைவூட்டல்: நீங்கள் எங்கள் பயிற்சி அமர்வுகளில் கலந்து கொள்ளவில்லை அல்லது எங்கள் வாட்ஸ்அப் புதுப்பிப்புகளைப் பின்பற்றவில்லை என்பதை கவனித்தேன். தொடர்ச்சியான கற்றல் வெற்றிக்கு அவசியம். வேலை செய்யாமல் இந்த அளவு வருமானத்தை எப்படை அடைய முடியும்? மீண்டும் தடத்திற்கு வருவோம்!`,
+            
+            6: `🌟 ஆட்சேர்ப்பு சிறப்பு புதுப்பிப்பு: எங்கள் குழு ஆட்சேர்ப்பில் அபாரமாக சிறப்பாக செயல்படுகிறது! ஆஃப்லைன் முறைகள் (விசிட்டிங் கார்டுகள், போஸ்டர்கள்) மற்றும் ஆன்லைன் அணுகுமுறைகளை திறம்பட பயன்படுத்துகிறோம். தீவிரமாக ஆட்சேர்ப்பு செய்யாத உறுப்பினர்கள் கூட எங்கள் குழுவின் வளர்ச்சியிலிருந்து பயனடைகிறார்கள். ஒவ்வொரு மாதமும் புதிய சாதனையாளர்கள் உருவாகிறார்கள்! இந்த வெற்றிக் கதையின் ஒரு பகுதியாக இருக்க உங்கள் ஆட்சேர்ப்பு முயற்சிகளில் கவனம் செலுத்தவும். உங்கள் பங்களிப்பு முக்கியம்!`
+        };
+
+        let selectedTemplate = null;
+        let currentLanguage = 'en';
+        let contacts = [];
+        let deletedContacts = [];
+        let nextId = 1;
+        let searchTerm = '';
+        let customTemplates = {};
+        let showDeleted = false;
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status-message ' + type;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        function loadContacts() {
+            try {
+                const saved = localStorage.getItem('vestigeContacts');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    contacts = data.contacts || [];
+                    deletedContacts = data.deletedContacts || [];
+                    customTemplates = data.customTemplates || {};
+                    nextId = data.nextId || 1;
+                    console.log('Loaded contacts:', contacts.length, 'Deleted:', deletedContacts.length);
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+            }
+        }
+
+        function saveContacts() {
+            try {
+                localStorage.setItem('vestigeContacts', JSON.stringify({
+                    contacts: contacts,
+                    deletedContacts: deletedContacts,
+                    customTemplates: customTemplates,
+                    nextId: nextId
+                }));
+                console.log('Saved contacts:', contacts.length, 'Deleted:', deletedContacts.length);
+            } catch (error) {
+                console.error('Error saving contacts:', error);
+                showStatus('Error saving contacts!', 'error');
+            }
+        }
+
+        function updateSelectedCount() {
+            const activeSelected = contacts.filter(c => c.selected).length;
+            const deletedSelected = deletedContacts.filter(c => c.selected).length;
+            const totalSelected = showDeleted ? deletedSelected : activeSelected;
+            
+            document.getElementById('selectedCount').textContent = `${totalSelected} Selected`;
+            
+            // Show/hide bulk operations panel
+            const bulkSection = document.getElementById('bulkEditSection');
+            if (totalSelected > 0) {
+                bulkSection.style.display = 'block';
+                
+                // Show appropriate buttons based on view
+                if (showDeleted) {
+                    document.getElementById('bulkEditBtn').style.display = 'none';
+                    document.getElementById('bulkDeleteBtn').style.display = 'none';
+                    document.getElementById('bulkRestoreBtn').style.display = 'inline-block';
+                    document.getElementById('bulkPermanentDeleteBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('bulkEditBtn').style.display = 'inline-block';
+                    document.getElementById('bulkDeleteBtn').style.display = 'inline-block';
+                    document.getElementById('bulkRestoreBtn').style.display = 'none';
+                    document.getElementById('bulkPermanentDeleteBtn').style.display = 'none';
+                }
+            } else {
+                bulkSection.style.display = 'none';
+            }
+        }
+
+        function sendToContact(contact, message) {
+            // Update last contacted date
+            contact.lastContacted = new Date().toISOString();
+            saveContacts();
+
+            // Open WhatsApp
+            const whatsappUrl = `https://wa.me/${contact.number}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            showStatus(`✅ Opening WhatsApp for ${contact.name}!`, 'success');
+            
+            // Refresh the table to show updated date
+            setTimeout(() => renderContacts(), 500);
+        }
+
+        function renderContacts() {
+            const tbody = document.getElementById('contactTableBody');
+            const tableHeader = document.getElementById('tableHeader');
+            
+            // Update deleted count badge
+            document.getElementById('deletedCount').textContent = deletedContacts.length;
+            
+            // Determine which contacts to display
+            let displayContacts = showDeleted ? deletedContacts : contacts;
+            
+            // Apply search filter
+            if (searchTerm) {
+                displayContacts = displayContacts.filter(contact => 
+                    contact.name.toLowerCase().includes(searchTerm) || 
+                    contact.number.includes(searchTerm) ||
+                    (contact.notes && contact.notes.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // Update table header based on view
+            if (showDeleted) {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th style="width: 40px;">✓</th>
+                        <th>Name</th>
+                        <th>Number</th>
+                        <th>Notes</th>
+                        <th style="width: 120px;">Deleted Date</th>
+                        <th style="width: 90px;">Restore</th>
+                        <th style="width: 90px;">Delete Forever</th>
+                    </tr>
+                `;
+            } else {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th style="width: 40px;">✓</th>
+                        <th>Name</th>
+                        <th>Number</th>
+                        <th>Notes</th>
+                        <th style="width: 100px;">Last Contact</th>
+                        <th style="width: 80px;">Send</th>
+                        <th style="width: 60px;">Action</th>
+                    </tr>
+                `;
+            }
+            
+            if (displayContacts.length === 0) {
+                const message = searchTerm 
+                    ? `No contacts found matching "${searchTerm}"`
+                    : showDeleted ? 'No deleted contacts' : 'No contacts yet. Add your first contact above!';
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: #40E0D0;">${message}</td></tr>`;
+                updateSelectedCount();
+                return;
+            }
+            
+            if (showDeleted) {
+                // Render deleted contacts with restore/permanent delete options
+                tbody.innerHTML = displayContacts.map(contact => {
+                    const deletedDate = contact.deletedDate 
+                        ? new Date(contact.deletedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })
+                        : '-';
+                    
+                    return `
+                    <tr style="opacity: 0.7; background: rgba(255, 0, 0, 0.1);">
+                        <td><input type="checkbox" class="contact-checkbox" data-id="${contact.id}" ${contact.selected ? 'checked' : ''}></td>
+                        <td>${contact.name}</td>
+                        <td style="font-size: 12px;">${contact.number}</td>
+                        <td style="font-size: 11px;">${contact.notes || '-'}</td>
+                        <td style="text-align: center; color: #ff6666; font-size: 11px;">${deletedDate}</td>
+                        <td style="text-align: center;">
+                            <button class="restore-btn" data-id="${contact.id}" style="background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
+                                ♻️ Restore
+                            </button>
+                        </td>
+                        <td style="text-align: center;">
+                            <button class="permanent-delete-btn" data-id="${contact.id}" style="background: linear-gradient(135deg, #8B0000, #DC143C); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
+                                ❌ Forever
+                            </button>
+                        </td>
+                    </tr>
+                `}).join('');
+            } else {
+                // Render active contacts
+                tbody.innerHTML = displayContacts.map(contact => {
+                    const lastContactedText = contact.lastContacted 
+                        ? new Date(contact.lastContacted).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })
+                        : '-';
+                    
+                    return `
+                    <tr class="${contact.selected ? 'selected' : ''}">
+                        <td><input type="checkbox" class="contact-checkbox" data-id="${contact.id}" ${contact.selected ? 'checked' : ''}></td>
+                        <td>${contact.name}</td>
+                        <td style="font-size: 12px;">${contact.number}</td>
+                        <td>
+                            <input type="text" 
+                                   class="notes-input" 
+                                   data-id="${contact.id}" 
+                                   value="${contact.notes || ''}" 
+                                   placeholder="Notes..."
+                                   style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 4px; padding: 4px 8px; color: #E6E6FA; font-size: 11px;">
+                        </td>
+                        <td style="text-align: center; color: ${contact.lastContacted ? '#50C878' : '#666'}; font-size: 11px;">${lastContactedText}</td>
+                        <td style="text-align: center;">
+                            <button class="send-individual-btn" data-id="${contact.id}" style="background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
+                                📤
+                            </button>
+                        </td>
+                        <td style="text-align: center;"><button class="delete-btn" data-id="${contact.id}">🗑️</button></td>
+                    </tr>
+                `}).join('');
+            }
+            
+            // Add event listeners
+            attachEventListeners();
+            updateSelectedCount();
+        }
+
+        function attachEventListeners() {
+            // Checkboxes
+            document.querySelectorAll('.contact-checkbox').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const id = parseInt(this.dataset.id);
+                    const contactList = showDeleted ? deletedContacts : contacts;
+                    const contact = contactList.find(c => c.id === id);
+                    if (contact) {
+                        contact.selected = this.checked;
+                        saveContacts();
+                        renderContacts();
+                    }
+                });
+            });
+            
+            if (showDeleted) {
+                // Restore buttons
+                document.querySelectorAll('.restore-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        const contact = deletedContacts.find(c => c.id === id);
+                        if (contact) {
+                            // Move from deleted to active
+                            deletedContacts = deletedContacts.filter(c => c.id !== id);
+                            delete contact.deletedDate;
+                            contact.selected = false;
+                            contacts.push(contact);
+                            saveContacts();
+                            renderContacts();
+                            showStatus(`✅ Restored "${contact.name}"!`, 'success');
+                        }
+                    });
+                });
+                
+                // Permanent delete buttons
+                document.querySelectorAll('.permanent-delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        const contact = deletedContacts.find(c => c.id === id);
+                        if (contact && confirm(`⚠️ PERMANENTLY DELETE "${contact.name}"?\n\nThis cannot be undone!`)) {
+                            deletedContacts = deletedContacts.filter(c => c.id !== id);
+                            saveContacts();
+                            renderContacts();
+                            showStatus(`❌ Permanently deleted "${contact.name}"`, 'success');
+                        }
+                    });
+                });
+            } else {
+                // Notes input
+                document.querySelectorAll('.notes-input').forEach(input => {
+                    input.addEventListener('blur', function() {
+                        const id = parseInt(this.dataset.id);
+                        const contact = contacts.find(c => c.id === id);
+                        if (contact) {
+                            contact.notes = this.value.trim();
+                            saveContacts();
+                        }
+                    });
+                    
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            this.blur();
+                        }
+                    });
+                });
+                
+                // Individual send buttons
+                document.querySelectorAll('.send-individual-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        const contact = contacts.find(c => c.id === id);
+                        const message = document.getElementById('customMessage').value.trim();
+                        
+                        if (!message) {
+                            showStatus('Please select a template or type a message first!', 'error');
+                            return;
+                        }
+                        
+                        if (contact) {
+                            sendToContact(contact, message);
+                        }
+                    });
+                });
+                
+                // Delete buttons (soft delete)
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.dataset.id);
+                        const contact = contacts.find(c => c.id === id);
+                        if (contact) {
+                            // Move to deleted
+                            contacts = contacts.filter(c => c.id !== id);
+                            contact.deletedDate = new Date().toISOString();
+                            contact.selected = false;
+                            deletedContacts.push(contact);
+                            saveContacts();
+                            renderContacts();
+                            showStatus(`🗑️ Moved "${contact.name}" to deleted`, 'success');
+                        }
+                    });
+                });
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS - CONTACT MANAGEMENT
+        // ============================================
+
+        // Add single contact
+        document.getElementById('addContactBtn').addEventListener('click', function() {
+            const name = document.getElementById('contactName').value.trim();
+            const number = document.getElementById('contactNumber').value.trim();
+            
+            if (!name) {
+                showStatus('Please enter a name!', 'error');
+                return;
+            }
+            
+            if (!number) {
+                showStatus('Please enter a phone number!', 'error');
+                return;
+            }
+            
+            // Clean the number
+            const cleanNumber = number.replace(/\D/g, '');
+            if (cleanNumber.length < 10) {
+                showStatus('Please enter a valid phone number!', 'error');
+                return;
+            }
+            
+            // Check for duplicates
+            if (contacts.some(c => c.number === cleanNumber)) {
+                showStatus('This number already exists!', 'error');
+                return;
+            }
+            
+            // Add contact
+            contacts.push({
+                id: nextId++,
+                name: name,
+                number: cleanNumber,
+                selected: false,
+                notes: '',
+                lastContacted: null
+            });
+            
+            saveContacts();
+            renderContacts();
+            
+            // Clear inputs
+            document.getElementById('contactName').value = '';
+            document.getElementById('contactNumber').value = '';
+            
+            showStatus(`✅ Contact "${name}" added successfully!`, 'success');
+        });
+
+        // Bulk add contacts
+        document.getElementById('bulkAddBtn').addEventListener('click', function() {
+            const bulkText = document.getElementById('bulkContactInput').value.trim();
+            
+            if (!bulkText) {
+                showStatus('Please paste contact list in the text area!', 'error');
+                return;
+            }
+            
+            const lines = bulkText.split('\n').filter(line => line.trim());
+            let addedCount = 0;
+            let skippedCount = 0;
+            
+            lines.forEach((line) => {
+                // Try comma separation first
+                let parts = line.split(',').map(p => p.trim());
+                
+                // If no comma, try space separation
+                if (parts.length === 1) {
+                    parts = line.trim().split(/\s+/);
+                }
+                
+                if (parts.length < 2) {
+                    skippedCount++;
+                    return;
+                }
+                
+                // Last part is assumed to be the number
+                const number = parts[parts.length - 1].replace(/\D/g, '');
+                // Everything else is the name
+                const name = parts.slice(0, -1).join(' ');
+                
+                if (!name || !number || number.length < 10) {
+                    skippedCount++;
+                    return;
+                }
+                
+                // Check for duplicates
+                if (contacts.some(c => c.number === number)) {
+                    skippedCount++;
+                    return;
+                }
+                
+                // Add contact
+                contacts.push({
+                    id: nextId++,
+                    name: name,
+                    number: number,
+                    selected: false,
+                    notes: '',
+                    lastContacted: null
+                });
+                
+                addedCount++;
+            });
+            
+            if (addedCount > 0) {
+                saveContacts();
+                renderContacts();
+            }
+            
+            // Clear the text area
+            document.getElementById('bulkContactInput').value = '';
+            
+            // Show results
+            let message = `✅ Added ${addedCount} contact(s)`;
+            if (skippedCount > 0) {
+                message += `, skipped ${skippedCount}`;
+            }
+            
+            showStatus(message, addedCount > 0 ? 'success' : 'error');
+        });
+
+        // Clear bulk text
+        document.getElementById('clearBulkBtn').addEventListener('click', function() {
+            document.getElementById('bulkContactInput').value = '';
+            showStatus('Bulk text area cleared!', 'success');
+        });
+
+        // Select All
+        document.getElementById('selectAllBtn').addEventListener('click', function() {
+            contacts.forEach(c => c.selected = true);
+            saveContacts();
+            renderContacts();
+            showStatus('All contacts selected!', 'success');
+        });
+
+        // Deselect All
+        document.getElementById('deselectAllBtn').addEventListener('click', function() {
+            if (showDeleted) {
+                deletedContacts.forEach(c => c.selected = false);
+            } else {
+                contacts.forEach(c => c.selected = false);
+            }
+            saveContacts();
+            renderContacts();
+            showStatus('All contacts deselected!', 'success');
+        });
+
+        // Bulk Edit
+        document.getElementById('bulkEditBtn').addEventListener('click', function() {
+            const selected = contacts.filter(c => c.selected);
+            if (selected.length === 0) return;
+            
+            const action = confirm('Choose action:\nOK = Add Notes to Selected\nCancel = Go Back');
+            if (action) {
+                const note = prompt(`Add note to ${selected.length} selected contact(s):`);
+                if (note && note.trim()) {
+                    selected.forEach(c => {
+                        c.notes = (c.notes ? c.notes + ' | ' : '') + note.trim();
+                    });
+                    saveContacts();
+                    renderContacts();
+                    showStatus(`✅ Added note to ${selected.length} contact(s)!`, 'success');
+                }
+            }
+        });
+
+        // Bulk Delete (Move to deleted)
+        document.getElementById('bulkDeleteBtn').addEventListener('click', function() {
+            const selected = contacts.filter(c => c.selected);
+            if (selected.length === 0) return;
+            
+            if (confirm(`Move ${selected.length} contact(s) to deleted?`)) {
+                const now = new Date().toISOString();
+                selected.forEach(c => {
+                    c.deletedDate = now;
+                    c.selected = false;
+                    deletedContacts.push(c);
+                });
+                contacts = contacts.filter(c => !c.selected);
+                saveContacts();
+                renderContacts();
+                showStatus(`🗑️ Moved ${selected.length} contact(s) to deleted!`, 'success');
+            }
+        });
+
+        // Bulk Restore
+        document.getElementById('bulkRestoreBtn').addEventListener('click', function() {
+            const selected = deletedContacts.filter(c => c.selected);
+            if (selected.length === 0) return;
+            
+            if (confirm(`Restore ${selected.length} contact(s)?`)) {
+                selected.forEach(c => {
+                    delete c.deletedDate;
+                    c.selected = false;
+                    contacts.push(c);
+                });
+                deletedContacts = deletedContacts.filter(c => !c.selected);
+                saveContacts();
+                renderContacts();
+                showStatus(`✅ Restored ${selected.length} contact(s)!`, 'success');
+            }
+        });
+
+        // Bulk Permanent Delete
+        document.getElementById('bulkPermanentDeleteBtn').addEventListener('click', function() {
+            const selected = deletedContacts.filter(c => c.selected);
+            if (selected.length === 0) return;
+            
+            if (confirm(`⚠️ PERMANENTLY DELETE ${selected.length} contact(s)?\n\nThis CANNOT be undone!`)) {
+                deletedContacts = deletedContacts.filter(c => !c.selected);
+                saveContacts();
+                renderContacts();
+                showStatus(`❌ Permanently deleted ${selected.length} contact(s)!`, 'success');
+            }
+        });
+
+        // Export
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            if (contacts.length === 0) {
+                showStatus('No contacts to export!', 'error');
+                return;
+            }
+            
+            const dataStr = JSON.stringify({ contacts, nextId }, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `vestige-contacts-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus(`✅ Exported ${contacts.length} contacts!`, 'success');
+        });
+
+        // Import
+        document.getElementById('importBtn').addEventListener('click', function() {
+            document.getElementById('importFile').click();
+        });
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    
+                    if (!data.contacts || !Array.isArray(data.contacts)) {
+                        showStatus('Invalid file format!', 'error');
+                        return;
+                    }
+                    
+                    // Merge or replace
+                    const choice = confirm('Click OK to MERGE with existing contacts, or CANCEL to REPLACE all contacts.');
+                    
+                    if (choice) {
+                        // Merge - avoid duplicates
+                        let addedCount = 0;
+                        data.contacts.forEach(newContact => {
+                            if (!contacts.some(c => c.number === newContact.number)) {
+                                contacts.push({
+                                    ...newContact,
+                                    id: nextId++,
+                                    selected: false
+                                });
+                                addedCount++;
+                            }
+                        });
+                        showStatus(`✅ Imported ${addedCount} new contacts!`, 'success');
+                    } else {
+                        // Replace all
+                        contacts = data.contacts.map(c => ({ ...c, selected: false }));
+                        nextId = data.nextId || contacts.length + 1;
+                        showStatus(`✅ Replaced with ${contacts.length} contacts!`, 'success');
+                    }
+                    
+                    saveContacts();
+                    renderContacts();
+                } catch (error) {
+                    showStatus('Error reading file!', 'error');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            this.value = '';
+        });
+
+        // Search
+        document.getElementById('searchContact').addEventListener('input', function() {
+            searchTerm = this.value.toLowerCase().trim();
+            renderContacts();
+        });
+
+        // View toggle buttons
+        document.getElementById('showActiveBtn').addEventListener('click', function() {
+            showDeleted = false;
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            this.style.background = 'linear-gradient(135deg, #50C878, #40E0D0)';
+            document.getElementById('showDeletedBtn').style.background = 'linear-gradient(135deg, #666, #888)';
+            searchTerm = '';
+            document.getElementById('searchContact').value = '';
+            renderContacts();
+        });
+
+        document.getElementById('showDeletedBtn').addEventListener('click', function() {
+            showDeleted = true;
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            this.style.background = 'linear-gradient(135deg, #FF6B6B, #FF1493)';
+            document.getElementById('showActiveBtn').style.background = 'linear-gradient(135deg, #666, #888)';
+            searchTerm = '';
+            document.getElementById('searchContact').value = '';
+            renderContacts();
+        });
+
+        // ============================================
+        // EVENT LISTENERS - TEMPLATES
+        // ============================================
+
+        // Template selection
+        document.querySelectorAll('.template-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTemplate = this.dataset.template;
+                const templateText = currentLanguage === 'ta' ? templatesTamil[selectedTemplate] : templates[selectedTemplate];
+                document.getElementById('customMessage').value = templateText;
+            });
+        });
+
+        // Language selection
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.language-btn').forEach(b => {
+                    b.style.opacity = '0.6';
+                    b.classList.remove('active-lang');
+                });
+                this.style.opacity = '1';
+                this.classList.add('active-lang');
+                
+                currentLanguage = this.dataset.lang;
+                
+                // Update current message if template is selected
+                if (selectedTemplate) {
+                    const templateText = currentLanguage === 'ta' ? templatesTamil[selectedTemplate] : templates[selectedTemplate];
+                    document.getElementById('customMessage').value = templateText;
+                }
+                
+                showStatus(`Language switched to ${currentLanguage === 'ta' ? 'Tamil (தமிழ்)' : 'English'}`, 'success');
+            });
+        });
+
+        // Render custom templates
+        function renderCustomTemplates() {
+            const section = document.getElementById('customTemplatesSection');
+            const listDiv = document.getElementById('customTemplatesList');
+            const countSpan = document.getElementById('customTemplateCount');
+            
+            const templateIds = Object.keys(customTemplates);
+            countSpan.textContent = templateIds.length;
+            
+            if (templateIds.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            
+            listDiv.innerHTML = templateIds.map(id => {
+                const template = customTemplates[id];
+                const preview = template.message.substring(0, 50) + (template.message.length > 50 ? '...' : '');
+                
+                return `
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 215, 0, 0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 10px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="color: #FFD700; font-weight: bold; font-size: 13px; margin-bottom: 4px;">${template.name}</div>
+                                <div style="color: #40E0D0; font-size: 11px; word-break: break-word;">${preview}</div>
+                            </div>
+                            <div style="display: flex; gap: 5px; flex-shrink: 0;">
+                                <button class="use-custom-template" data-id="${id}" style="background: linear-gradient(135deg, #50C878, #40E0D0); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold;">
+                                    📋 Use
+                                </button>
+                                <button class="edit-custom-template" data-id="${id}" style="background: linear-gradient(135deg, #4169E1, #8A2BE2); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold;">
+                                    ✏️ Edit
+                                </button>
+                                <button class="delete-custom-template" data-id="${id}" style="background: linear-gradient(135deg, #FF6B6B, #FF1493); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold;">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Attach event listeners for custom template buttons
+            document.querySelectorAll('.use-custom-template').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const template = customTemplates[id];
+                    if (template) {
+                        document.getElementById('customMessage').value = template.message;
+                        showStatus(`✅ Loaded template: ${template.name}`, 'success');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.edit-custom-template').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const template = customTemplates[id];
+                    if (template) {
+                        const newName = prompt('Template Name:', template.name);
+                        if (newName && newName.trim()) {
+                            const newMessage = prompt('Template Message:', template.message);
+                            if (newMessage && newMessage.trim()) {
+                                customTemplates[id] = {
+                                    name: newName.trim(),
+                                    message: newMessage.trim(),
+                                    createdDate: template.createdDate,
+                                    modifiedDate: new Date().toISOString()
+                                };
+                                saveContacts();
+                                renderCustomTemplates();
+                                showStatus('✅ Template updated!', 'success');
+                            }
+                        }
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-custom-template').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const template = customTemplates[id];
+                    if (template && confirm(`Delete custom template "${template.name}"?`)) {
+                        delete customTemplates[id];
+                        saveContacts();
+                        renderCustomTemplates();
+                        showStatus('🗑️ Template deleted!', 'success');
+                    }
+                });
+            });
+        }
+
+        // Save custom template
+        document.getElementById('saveCustomBtn').addEventListener('click', function() {
+            const customMsg = document.getElementById('customMessage').value.trim();
+            if (!customMsg) {
+                showStatus('Please enter a message to save!', 'error');
+                return;
+            }
+            
+            const templateName = prompt('Enter a name for this template:', `Custom Template ${Object.keys(customTemplates).length + 1}`);
+            if (!templateName || !templateName.trim()) {
+                return;
+            }
+            
+            const templateId = 'custom_' + Date.now();
+            customTemplates[templateId] = {
+                name: templateName.trim(),
+                message: customMsg,
+                createdDate: new Date().toISOString(),
+                modifiedDate: new Date().toISOString()
+            };
+            
+            saveContacts();
+            renderCustomTemplates();
+            
+            showStatus(`✅ Custom template "${templateName.trim()}" saved!`, 'success');
+        });
+
+        // Send to selected contacts
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const selectedContacts = contacts.filter(c => c.selected);
+            const message = document.getElementById('customMessage').value.trim();
+            
+            if (selectedContacts.length === 0) {
+                showStatus('Please select at least one contact!', 'error');
+                return;
+            }
+            
+            if (!message) {
+                showStatus('Please select a template or type a custom message!', 'error');
+                return;
+            }
+
+            // Update last contacted date for selected contacts
+            const now = new Date().toISOString();
+            selectedContacts.forEach(contact => {
+                contact.lastContacted = now;
+            });
+            saveContacts();
+
+            // Open WhatsApp for each selected contact
+            selectedContacts.forEach((contact, index) => {
+                setTimeout(() => {
+                    const whatsappUrl = `https://wa.me/${contact.number}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                    
+                    if (index === selectedContacts.length - 1) {
+                        showStatus(`✅ Opening WhatsApp for ${selectedContacts.length} contact(s)!`, 'success');
+                        setTimeout(() => renderContacts(), 1000);
+                    }
+                }, index * 500);
+            });
+        });
+
+        // Clear message
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear the message?')) {
+                document.getElementById('customMessage').value = '';
+                document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('selected'));
+                selectedTemplate = null;
+                showStatus('Message cleared!', 'success');
+            }
+        });
+
+        // Enter key shortcuts
+        document.getElementById('contactNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('addContactBtn').click();
+            }
+        });
+
+        document.getElementById('contactName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('contactNumber').focus();
+            }
+        });
+
+        // ============================================
+        // CANVAS ANIMATION
+        // ============================================
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Node {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.radius = 2.5;
+                this.color = this.randomColor();
+            }
+
+            randomColor() {
+                const colors = ['#FFD700', '#50C878', '#40E0D0', '#9370DB', '#FF6B6B', '#4169E1'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        const nodes = [];
+        const nodeCount = 100;
+        
+        for (let i = 0; i < nodeCount; i++) {
+            nodes.push(new Node());
+        }
+
+        function drawConnections() {
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 160) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        
+                        const opacity = (1 - distance / 160) * 0.6;
+                        const gradient = ctx.createLinearGradient(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+                        
+                        gradient.addColorStop(0, nodes[i].color + Math.floor(opacity * 255).toString(16).padStart(2, '0'));
+                        gradient.addColorStop(1, nodes[j].color + Math.floor(opacity * 255).toString(16).padStart(2, '0'));
+                        
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawConnections();
+            nodes.forEach(node => {
+                node.update();
+                node.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Create floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 25000);
+        }
+
+        setInterval(createParticle, 300);
+        for (let i = 0; i < 20; i++) {
+            setTimeout(createParticle, i * 200);
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        console.log('Initializing application...');
+        loadContacts();
+        renderContacts();
+        renderCustomTemplates();
+        console.log('Application initialized with', contacts.length, 'contacts');
+    </script>
+</body>
+</html>
